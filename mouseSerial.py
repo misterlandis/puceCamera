@@ -1,7 +1,7 @@
 class MouseSerial:
 	import serial
 	import time
-
+	
 	ser = serial.Serial()
 	mousePixels = []
 
@@ -9,14 +9,26 @@ class MouseSerial:
 		print "hello"
 	def initSerial(self):
 		self.ser.port="/dev/ttyUSB0" 
-		self.ser.baudrate = 38400
+		self.ser.baudrate = 115200
 		self.ser.timeout = 0
 		self.ser.open()
+		print "serial initialized"
 	
 	def getFrame(self):
-		self.ser.write('d')
-		self.time.sleep(.4)
-		response = MouseSerial.getMouseResponse(self)
+		print "getting frame"
+		#self.ser.write('d')
+		#self.time.sleep(0)
+		response = []
+		frame_over = False
+		fails = 0
+		while frame_over == False:
+			newdata = self.getMouseResponse()
+			if newdata == []: fails += 1
+			response = response + newdata
+			if 127 in response: frame_over = True #oops frame ended early
+			if len(response) >= 325: frame_over = True #oops frame is too long
+			#if fails > 100: frame_over = True #oops too many failed attempts
+			
 		return response
 
 	def getMouseResponse(self):
@@ -27,7 +39,7 @@ class MouseSerial:
 		mousePixels = []
 		for char in mouseSays:
 			mousePixels.append(ord(char))
-		#print mousePixels
+		#print "mousepixels: ", mousePixels
 		return mousePixels	
 			
 
